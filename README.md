@@ -6,7 +6,7 @@ This is a basic docker compose env with a traefik proxy and opentelemetry stack
 
 This env creates a network 'web' that other docker compose envs can use to access it services and for the proxy to connect to.
 
-To use it add the network to services and add the following in the botton of docker compose file. Note this env must be started before other envs so the network is created
+To use it add the network to services and add the following in the bottom of docker compose file. Note this env must be started before other envs so the network is created
 ```yaml
 networks:
   web:
