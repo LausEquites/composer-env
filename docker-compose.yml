@@ -1,0 +1,86 @@
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entryPoints.metrics.address=:9100"
+      - "--metrics.prometheus.entryPoint=metrics"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
+      - "--tracing=true"
+      - "--tracing.otlp.grpc=true"
+      - "--tracing.otlp.grpc.endpoint=otel:4317"
+      - "--tracing.otlp.grpc.insecure=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "9100:9100" # Prometheus metrics endpoint
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - web
+
+  otel:
+    image: otel/opentelemetry-collector:0.30.0
+    ports:
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+    #      - "8889:8889" # Prometheus scrape endpoint
+    #      - "55680:55680" # OpenCensus receiver
+    volumes:
+      - ./collector/otel-config.yaml:/etc/otel/config.yaml
+    command: ["--config", "/etc/otel/config.yaml"]
+    networks:
+      - web
+
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yml" ]
+    ports:
+      - "3200:3200"
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo.yml
+    networks:
+      - web
+
+  loki:
+    image: grafana/loki:3.1.0
+    ports:
+      - "3100:3100"
+    #    volumes:
+    #      - ./loki/loki-config.yml:/etc/loki/local-config.yaml
+    #    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - web
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - web
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - web
+
+volumes:
+  grafana-data:
+
+networks:
+  web:
+    name: web
