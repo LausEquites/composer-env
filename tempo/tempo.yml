@@ -1,12 +1,17 @@
+stream_over_http_enabled: true
+
 server:
   http_listen_port: 3200
+  grpc_listen_port: 9095
 
 distributor:
   receivers:
     otlp:
       protocols:
         grpc:
+          endpoint: 0.0.0.0:4317
         http:
+          endpoint: 0.0.0.0:4318
 
 ingester:
   lifecycler:
@@ -14,6 +19,9 @@ ingester:
       kvstore:
         store: inmemory
       replication_factor: 1
+  max_block_duration: 1m
+  flush_check_period: 10s
+  complete_block_timeout: 1m
 
 compactor:
   compaction:
@@ -22,8 +30,22 @@ compactor:
 storage:
   trace:
     backend: local
+    wal:
+      path: /tmp/tempo/wal
     local:
-      path: /tmp/tempo/traces
+      path: /tmp/tempo/blocks
+
+metrics_generator:
+  storage:
+    path: /tmp/tempo/generator/wal
+  traces_storage:
+    path: /tmp/tempo/generator/traces
 
 overrides:
-  max_bytes_per_trace: 5000000
+  defaults:
+    cost_attribution:
+      dimensions:
+        service.name: ""
+    metrics_generator:
+      processors: [service-graphs, span-metrics, local-blocks] # enables metrics generator
+      generate_native_histograms: both

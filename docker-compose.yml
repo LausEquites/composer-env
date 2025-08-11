@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.3
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -15,6 +15,8 @@ services:
       - "--tracing.otlp.grpc=true"
       - "--tracing.otlp.grpc.endpoint=otel:4317"
       - "--tracing.otlp.grpc.insecure=true"
+      - "--accesslog=true"
+      - "--log.level=DEBUG"
     ports:
       - "80:80"
       - "8080:8080"
@@ -42,6 +44,8 @@ services:
     command: [ "-config.file=/etc/tempo.yml" ]
     ports:
       - "3200:3200"
+      - "3201:3100"
+      - "9095:9095"
     volumes:
       - ./tempo/tempo.yml:/etc/tempo.yml
     networks:

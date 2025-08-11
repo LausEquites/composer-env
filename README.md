@@ -15,4 +15,4 @@ networks:
 ```
 
 ## Opentelemetry collector
-The endpoint to the collector is eithe `http://otel:4318` or `http://otel:4317` depending on protocol
+The endpoint to the collector is either `http://otel:4318` or `http://otel:4317` depending on protocol
