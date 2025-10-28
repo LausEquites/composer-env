@@ -27,7 +27,7 @@ services:
       - web
 
   otel:
-    image: otel/opentelemetry-collector:0.30.0
+    image: otel/opentelemetry-collector:0.138.0
     ports:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
@@ -81,6 +81,19 @@ services:
       - "9090:9090"
     networks:
       - web
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.swagger.rule=Host(`swagger.localhost`)"
+      - "traefik.http.routers.swagger.entrypoints=web"
+      - "traefik.http.services.space.loadbalancer.server.port=8080"
+    networks:
+      - web
+    #environment:
+    #  # Standard-URL (kan overskrives i browseren med ?url=...)
+    #  URL: "https://din-server/api/openapi.yaml"
 
 volumes:
   grafana-data:

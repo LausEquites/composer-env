@@ -25,6 +25,7 @@ ingester:
 
 compactor:
   compaction:
+    block_retention: 168h
     compacted_block_retention: 1h
 
 storage:
