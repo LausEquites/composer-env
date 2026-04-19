@@ -46,6 +46,10 @@ metrics_generator:
     path: /tmp/tempo/generator/traces
   registry:
     collection_interval: 15s
+  processor:
+    local_blocks:
+      filter_server_spans: false
+      flush_to_storage: true
 
 overrides:
   defaults:
@@ -53,5 +57,8 @@ overrides:
       dimensions:
         service.name: ""
     metrics_generator:
-      processors: [service-graphs, span-metrics]
+      processors:
+        - service-graphs
+        - span-metrics
+        - local-blocks
       generate_native_histograms: both
